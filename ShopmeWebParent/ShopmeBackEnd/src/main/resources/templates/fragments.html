@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="page_head(title, remove)" th:remove="${remove}">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0">
+
+    <title>[[${title}]]</title>
+
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/fontawesome/all.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/style.css}"/>
+    <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+    <script type="text/javascript" th:src="@{/js/common.js}"></script>
+
+<!--    <style>-->
+<!--        .text-center {-->
+<!--            text-align: center;-->
+<!--        }-->
+
+<!--        .mt-auto {-->
+<!--            margin-top: auto;-->
+<!--        }-->
+
+<!--        .footer {-->
+<!--            position: absolute;-->
+<!--            bottom: 0;-->
+<!--            width: 100%;-->
+<!--            background-color: #ffffff; /* Adjust as needed */-->
+<!--            padding: 20px 0; /* Adjust as needed */-->
+<!--            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1); /* Optional: Add shadow for visual effect */-->
+<!--        }-->
+<!--    </style>-->
+
+    <!--template-->
+
+    <base href="http://localhost:8080/ShopmeAdmin/">
+
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- base:css -->
+    <link rel="stylesheet" href="vendors/mdi/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="vendors/feather/feather.css">
+    <link rel="stylesheet" href="vendors/base/vendor.bundle.base.css">
+    <!-- endinject -->
+    <!-- plugin css for this page -->
+    <link rel="stylesheet" href="vendors/flag-icon-css/css/flag-icon.min.css"/>
+    <link rel="stylesheet" href="vendors/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="vendors/jquery-bar-rating/fontawesome-stars-o.css">
+    <link rel="stylesheet" href="vendors/jquery-bar-rating/fontawesome-stars.css">
+    <!-- End plugin css for this page -->
+    <!-- inject:css -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- endinject -->
+    <link rel="shortcut icon" href="images/favicon.png"/>
+</head>
+<body>
+
+<div th:fragment="footer" class="text-center p-3">
+    <p>Gamezone Control Panel - Copyright &copy; Gamezone</p>
+</div>
+
+<th th:fragment="column_link(fieldName, columnLabel, removeTag)" th:remove="${removeTag}">
+    <a class="text-white"
+       th:href="@{${moduleURL} + '/page/' + ${currentPage} + '?sortField=' + ${fieldName}  +'&sortDir=' + ${sortField != fieldName ? sortDir : reverseSortDir} + ${keyword != null ? '&keyword=' + keyword : ''} + ${categoryId != null ? '&categoryId=' + categoryId : ''}}">
+        [[${columnLabel}]]
+    </a>
+    <span th:if="${sortField == fieldName}"
+          th:class="${sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'}"></span>
+</th>
+
+<a th:fragment="page_link(pageNum, label)"
+   class="page-link"
+   th:href="@{${moduleURL} + '/page/' + ${pageNum} + '?sortField=' + ${sortField} + '&sortDir=' + ${sortDir} + ${keyword != null ? '&keyword=' + keyword : ''} + ${categoryId != null ? '&categoryId=' + categoryId : ''}}">[[${label}]]</a>
+
+<div th:fragment="user_photos" th:remove="tag">
+    <span th:if="${user.photos == null}" class="fas fa-portrait fa-3x icon-silver"></span>
+    <img th:if="${user.photos != null}" th:src="@{${user.photosImagePath}}"
+         style="width: 100px;height: 100px"/>
+</div>
+
+<div th:fragment="status(enabled, entityName, entityURL)" th:remove="tag">
+    <a th:if="${enabled == true} "
+       th:href="@{${entityURL} + '/enabled/false'}"
+       th:title="'Disable this ' + ${entityName}">
+        <button type="button" class="btn btn-success btn-sm btn-icon-text">
+            Disable
+            <i class="typcn typcn-disable btn-icon-append"></i>
+        </button>
+    </a>
+
+    <a th:if="${enabled == false}"
+       th:href="@{${entityURL} + '/enabled/true'}"
+       th:title="'Enable this ' + ${entityName}">
+        <button type="button" class="btn btn-danger btn-sm btn-icon-text">
+            Enable
+            <i class="typcn typcn-enable btn-icon-append"></i>
+        </button>
+    </a>
+</div>
+
+<div th:fragment="edit(entityName, editURL)" th:remove="tag">
+    <a th:href="@{${editURL}}" th:title="'Edit this ' + ${entityName}">
+        <button type="button" class="btn btn-success btn-sm btn-icon-text">
+            Edit
+            <i class="typcn typcn-edit btn-icon-append"></i>
+        </button>
+    </a>
+</div>
+
+<div th:fragment="delete(entityName, entityId, deleteURL, visible)" th:remove="tag">
+    <th:block th:if="${visible}">
+        <a class="link-delete"
+           th:href="@{${deleteURL}}"
+           th:entityId="${entityId}"
+           th:title="'Delete this ' + ${entityName}">
+            <button type="button" class="btn btn-danger btn-sm btn-icon-text">
+                Delete
+                <i class="typcn typcn-delete btn-icon-append"></i>
+            </button>
+        </a>
+    </th:block>
+</div>
+
+<div th:fragment="pagination(entityName)" th:remove="tag">
+    <div class="text-center m-1" th:if="${totalItems > 0}">
+        <span>Showing [[${entityName}]] # [[${startCount}]] to [[${endCount}]] of [[${totalItems}]]</span>
+    </div>
+    <div class="text-center m-1" th:unless="${totalItems > 0}">
+        <span>No [[${entityName}]] found</span>
+    </div>
+
+    <div th:if="${totalPages > 1}">
+        <nav>
+            <ul class="pagination justify-content-center flex-wrap">
+                <li th:class="${currentPage > 1 ? 'page-item' : 'page-item disabled'}">
+                    <a th:replace="fragments :: page_link(1, 'First')"></a>
+                </li>
+                <li th:class="${currentPage > 1 ? 'page-item' : 'page-item disabled'}">
+                    <a th:replace="fragments :: page_link(${currentPage - 1}, 'Previous')"></a>
+                </li>
+
+                <li th:class="${currentPage != i ? 'page-item': 'page-item active'}"
+                    th:each="i : ${#numbers.sequence(1, totalPages)}">
+                    <a th:replace="fragments :: page_link(${i}, ${i})"></a>
+                </li>
+
+                <li th:class="${currentPage < totalPages ? 'page-item' : 'page-item disabled'}">
+                    <a th:replace="fragments :: page_link(${currentPage + 1}, 'Next')"></a>
+                </li>
+
+                <li th:class="${currentPage < totalPages ? 'page-item' : 'page-item disabled'}">
+                    <a th:replace="fragments :: page_link(${totalPages}, 'Last')"></a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<div th:fragment="search_form_and_message()">
+    <form th:action="@{${moduleURL} + '/page/1'}" class="form-inline m-3">
+        <input type="hidden" name="sortField" th:value="${sortField}"/>
+        <input type="hidden" name="sortDir" th:value="${sortDir}"/>
+
+        Filter:&nbsp;
+        <input type="search" name="keyword" th:value="${keyword}" class="form-control" required/>
+        &nbsp;&nbsp;
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i>
+        </button>
+        &nbsp;&nbsp;
+        <button type="button" class="btn btn-secondary" onclick="clearFilter()">
+            <i class="fas fa-eraser"></i>
+        </button>
+    </form>
+
+    <div th:if="${message != null}" class="alert alert-success text-center">
+        [[${message}]]
+    </div>
+</div>
+<div th:fragment="message">
+    <div th:if="${message != null}" class="alert alert-success text-center">
+        [[${message}]]
+    </div>
+</div>
+
+
+<div th:fragment="format_currency(amount)" th:remove="tag">
+    <span th:if="${CURRENCY_SYMBOL_POSITION == 'Before price'}" th:remove="tag">[[${CURRENCY_SYMBOL}]]</span>[[${#numbers.formatDecimal(amount,
+    1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE)}]]<span
+        th:if="${CURRENCY_SYMBOL_POSITION == 'After price'}" th:remove="tag">[[${CURRENCY_SYMBOL}]]</span>
+</div>
+
+<div th:fragment="format_time(dateTime)" th:remove="tag">
+    <span th:text="${#dates.format(dateTime, 'yyyy-MM-dd HH:mm:ss')}"></span>
+</div>
+
+<div th:fragment="currency_input(amount)" th:remove="tag">
+    <input type="text" readonly class="form-control"
+           th:value="${(CURRENCY_SYMBOL_POSITION == 'Before price' ? CURRENCY_SYMBOL : '') + #numbers.formatDecimal(amount, 1, THOUSANDS_POINT_TYPE, DECIMAL_DIGITS, DECIMAL_POINT_TYPE) + (CURRENCY_SYMBOL_POSITION == 'After price' ? CURRENCY_SYMBOL : '')}">
+</div>
+
+<th:block th:fragment="scripts">
+    <script src="vendors/base/vendor.bundle.base.js"></script>
+    <!-- endinject -->
+    <!-- Plugin js for this page-->
+    <!-- End plugin js for this page-->
+    <!-- inject:js -->
+    <script src="js/off-canvas.js"></script>
+    <script src="js/hoverable-collapse.js"></script>
+    <script src="js/template.js"></script>
+    <!-- endinject -->
+    <!-- plugin js for this page -->
+    <script src="vendors/chart.js/Chart.min.js"></script>
+    <script src="vendors/jquery-bar-rating/jquery.barrating.min.js"></script>
+    <!-- End plugin js for this page -->
+    <!-- Custom js for this page-->
+    <script src="js/dashboard.js"></script>
+</th:block>
+</body>
+</html>

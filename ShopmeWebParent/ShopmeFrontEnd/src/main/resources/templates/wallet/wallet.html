@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <head th:replace="fragments :: page_head('Shopme', 'tag')"/>
+    <link th:href="@{/star-rating/css/star-rating.css}" media="all" rel="stylesheet" type="text/css"/>
+    <script th:src="@{/star-rating/js/star-rating.js}" type="text/javascript"></script>
+    <link rel="stylesheet" th:href="@{/star-rating/themes/krajee-svg/theme.css}" media="all" type="text/css"/>
+    <script th:src="@{/star-rating/themes/krajee-svg/theme.js}" type="text/javascript"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+</head>
+<style>
+    .wallet-deposit-section {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .wallet-balance {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .deposit-form {
+        display: inline-block;
+    }
+
+    .deposit-input {
+        padding: 8px 12px;
+        margin-right: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+
+    .deposit-button {
+        padding: 8px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+    }
+
+    .deposit-button:hover {
+        background-color: #45a049;
+    }
+</style>
+<body>
+<div class="container-scroller">
+    <div th:replace="nav :: header"></div>
+    <div class="container-scroller">
+        <!--            //using walet entity for fetching balance-->
+        <div class="wallet-deposit-section">
+            <h1 class="wallet-balance">[[${wallet.balance}]]</h1>
+            <form th:action="@{/onRazorpaySuccess}" method="get" class="deposit-form">
+                <button id="hiddenWalletButton" hidden></button>
+                <input type="number" id="walletDeposit" name="amount" required class="deposit-input">
+            </form>
+            <div>
+                <button onclick="paymentStart()" class="btn btn-success rounded deposit-button">Add Deposit</button>
+            </div>
+        </div>
+        <div>&nbsp;</div>
+
+
+        <div th:replace="fragments :: scripts"></div>
+    </div>
+    <div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div><div>&nbsp;</div>
+    <div th:replace="navigation :: footer_menu"></div>
+</div>
+<script type="text/javascript">
+    contextPath = "[[@{/}]]";
+    var csrfHeaderName = "[[${_csrf.headerName}]]";
+    var csrfValue = "[[${_csrf.token}]]";
+
+    $(document).ready(function () {
+        $('.kv-ltr-theme-svg-star').rating({
+            displayOnly: true,
+            hoverOnClear: false,
+            showCaption: false,
+            theme: 'krajee-svg'
+        });
+    });
+
+    function submitToWallet() {
+        document.getElementById('hiddenWalletButton').click();
+    }
+
+    const paymentStart = () => {
+        console.log("payment started");
+        let amount = $("#walletDeposit").val();
+        console.log(amount);
+        if (amount == null || amount == "") {
+            alert("amount is required");
+            return;
+        }
+
+        $.ajax(
+            {
+                url: contextPath + 'walletDeposit',
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader(csrfHeaderName, csrfValue);
+                },
+                data: JSON.stringify({amount: amount, info: 'order_request'}),
+                contentType: 'application/json',
+                type: 'POST',
+                dataType: 'json',
+                success: function (response) {
+                    //invoked when success
+                    console.log(response);
+                    if (response.status == "created") {
+                        //open payment form
+                        var options = {
+                            "key": "rzp_test_KYtqpMJ35eljqL", // Enter the Key ID generated from the Dashboard
+                            "amount": response.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+                            "currency": "INR",
+                            "name": "Gamezone Ecommerce Platform", //your business name
+                            "description": "Order Payment",
+                            "image": "",
+                            "order_id": response.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+                            handler: function (response) {
+                                console.log(response.razorpay_payment_id);
+                                console.log(response.razorpay_order_id);
+                                console.log(response.razorpay_signature);
+                                console.log('payment successful!');
+                                Swal.fire({
+                                    position: "centre",
+                                    icon: "success",
+                                    title: "Payment done",
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                });
+                                submitToWallet();
+                            },
+                            "notes": {
+                                "address": "Overclocked "
+                            },
+                            "theme": {
+                                "color": "#60ff0a"
+                            }
+                        };
+                        let rzp = new Razorpay(options);
+                        rzp.on('payment.failed', function (response) {
+                            console.log(response.error.description);
+                            console.log(response.error.source);
+                            console.log(response.error.step);
+                            console.log(response.error.reason);
+                            console.log(response.error.metadata.order_id);
+                            console.log(response.error.metadata.payment_id);
+                            console.log(response.error.code);
+
+                        });
+                        rzp.open();
+                    }
+                }, error: function (error) {
+                    console.log(error);
+                    Swal.fire({
+                        position: "centre",
+                        icon: "error",
+                        title: "error paying try again",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
+            }
+        );
+
+    }
+</script>
+</body>
+</html>
